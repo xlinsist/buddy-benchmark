@@ -51,8 +51,61 @@ def report_performance(log):
           (result[0].ljust(30), str(formatted_time + " ms").rjust(10),
            str(formatted_performance).rjust(10)))
 
+# C1
+# N=1
+# F=192
+# C=1536
+# H_k=1
+# W_k=1
+# H_o=7
+# W_o=7
 
+# C2
+# N=1
+# F=1536
+# C=192
+# H_k=1
+# W_k=1
+# H_o=7
+# W_o=7
 
+# C3
+# N=1
+# F=384
+# C=48
+# H_k=3
+# W_k=3
+# H_o=28
+# W_o=28
+
+# C4
+# N=1
+# F=32
+# C=3
+# H_k=3
+# W_k=3
+# H_o=223
+# W_o=223
+
+# C5
+N=1
+F=96
+C=32
+H_k=3
+W_k=3
+H_o=112
+W_o=112
+
+# C6
+# N=1
+# F=64
+# C=64
+# H_k=3
+# W_k=3
+# H_o=56
+# W_o=56
+
+import sys
 
 def main():
   # ----------------------------------------------------------------------------
@@ -60,18 +113,18 @@ def main():
   # ----------------------------------------------------------------------------
   # Initialize the log list.
   log = []
-  size = 64,64,3
-  target = tvm.target.Target(target="llvm", host="llvm")
+  size = 64,H_o+H_k-1,W_o+W_k-1
+  # target = tvm.target.Target(target="llvm", host="llvm")
+  target = tvm.target.Target("llvm -mcpu=skylake-avx512")
   dtype = "float32"
   c,n,k = size
-  oc = c
-  ic = c
-  p = (k-1)//2
-  s = 1
-  data_x, data_k, data_y = get_conv_data(c, c, n, k, p, s,tvm.nd.array)
+  oc = F
+  ic = C
+  p = H_k
+  s = W_k
+  data_x, data_k, data_y = get_conv_data(oc, ic, n, k, p, s,tvm.nd.array)
   
 
-  ctx = getattr(mx, "cpu")()
   mxnet_times = bench_conv_mxnet(size)
 
   # ----------------------------------------------------------------------------
@@ -118,6 +171,8 @@ def main():
   log.append(("mxnet_baseline", mxnet_times  * 1000))  # Milliseconds
   # Dump the performance table.
   report_performance(log)
+
+  print(N, F, C, H_k, W_k, H_o, W_o)
 
 
 if __name__ == "__main__":
