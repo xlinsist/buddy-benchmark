@@ -1,4 +1,4 @@
-//===- MLIRGccLoopsEx2aBenchmark.cpp --------------------------------------------===//
+//===- MLIRGccLoopsEx1Benchmark.cpp --------------------------------------------===//
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -22,44 +22,46 @@
 #include <buddy/Core/Container.h>
 #include <iostream>
 
-// Declare the GccLoopsEx2a C interface.
+// Declare the gccloopsex1 C interface.
 extern "C" {
-void _mlir_ciface_mlir_gccloopsex2a(MemRef<int, 1> *output,
-                              size_t input1,
-                              int input2);
+void _mlir_ciface_mlir_gccloopsex1_vec(MemRef<int, 1> *output,
+                              MemRef<int, 1> *input1,
+                              MemRef<int, 1> *input2);
 }
 
 // Define input and output sizes.
-intptr_t sizesOutputArrayMLIRGccLoopsEx2a[1] = {100000};
+intptr_t sizesInputArrayMLIRGccLoopsEx1Vec_1[1] = {100000};
+intptr_t sizesInputArrayMLIRGccLoopsEx1Vec_2[1] = {100000};
+intptr_t sizesOutputArrayMLIRGccLoopsEx1Vec[1] = {100000};
 // Define the MemRef container for inputs and output.
-size_t input1 = 100000;
-int input2 = 16;
-MemRef<int, 1> outputMLIRGccLoopsEx2a(sizesOutputArrayMLIRGccLoopsEx2a, 0);
+MemRef<int, 1> inputMLIRGccLoopsEx1Vec_1(sizesInputArrayMLIRGccLoopsEx1Vec_1, 2);
+MemRef<int, 1> inputMLIRGccLoopsEx1Vec_2(sizesInputArrayMLIRGccLoopsEx1Vec_2, 3);
+MemRef<int, 1> outputMLIRGccLoopsEx1Vec(sizesOutputArrayMLIRGccLoopsEx1Vec, 0);
 
-static void MLIR_GccLoopsEx2a(benchmark::State &state) {
+static void MLIR_GccLoopsEx1Vec(benchmark::State &state) {
   for (auto _ : state) {
     for (int i = 0; i < state.range(0); ++i) {
-      _mlir_ciface_mlir_gccloopsex2a(&outputMLIRGccLoopsEx2a, input1,
-                               input2);
+      _mlir_ciface_mlir_gccloopsex1_vec(&outputMLIRGccLoopsEx1Vec, &inputMLIRGccLoopsEx1Vec_1,
+                               &inputMLIRGccLoopsEx1Vec_2);
     }
   }
 }
 
 // Register benchmarking function.
-BENCHMARK(MLIR_GccLoopsEx2a)->Arg(1);
+BENCHMARK(MLIR_GccLoopsEx1Vec)->Arg(1);
 
 // Generate result image.
-void generateResultMLIRGccLoopsEx2a() {
+void generateResultMLIRGccLoopsEx1Vec() {
   // Define the MemRef descriptor for inputs and output.
-  size_t input1 = 10;
-  int input2 = 16;
-  MemRef<int, 1> output(sizesOutputArrayMLIRGccLoopsEx2a, 0);
-  // Run the GccLoopsEx2a.
-  _mlir_ciface_mlir_gccloopsex2a(&output, input1, input2);
+  MemRef<int, 1> input1(sizesInputArrayMLIRGccLoopsEx1Vec_1, 2);
+  MemRef<int, 1> input2(sizesInputArrayMLIRGccLoopsEx1Vec_2, 3);
+  MemRef<int, 1> output(sizesOutputArrayMLIRGccLoopsEx1Vec, 0);
+  // Run the gccloopsex1.
+  _mlir_ciface_mlir_gccloopsex1_vec(&output, &input1, &input2);
   // Print the output.
   std::cout << "--------------------------------------------------------"
             << std::endl;
-  std::cout << "MLIR_GccLoopsEx2a: MLIR GccLoopsEx2a Operation" << std::endl;
+  std::cout << "MLIR_GccLoopsEx1Vec: MLIR GccLoopsEx1Vec Operation" << std::endl;
   std::cout << "[ ";
   for (size_t i = 0; i < output.getSize(); i++) {
     std::cout << output.getData()[i] << " ";

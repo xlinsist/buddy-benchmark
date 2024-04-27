@@ -31,13 +31,13 @@ size_t _mlir_ciface_mlir_gccloopsex2b(MemRef<int, 1> *output,
 }
 
 // Define input and output sizes.
-intptr_t sizesInputArrayMLIRGccLoopsEx2b1[1] = {10};
-intptr_t sizesInputArrayMLIRGccLoopsEx2b2[1] = {10};
-intptr_t sizesOutputArrayMLIRGccLoopsEx2b[1] = {10};
+intptr_t sizesInputArrayMLIRGccLoopsEx2b1[1] = {100000};
+intptr_t sizesInputArrayMLIRGccLoopsEx2b2[1] = {100000};
+intptr_t sizesOutputArrayMLIRGccLoopsEx2b[1] = {100000};
 // Define the MemRef container for inputs and output.
 MemRef<int, 1> inputMLIRGccLoopsEx2b1(sizesInputArrayMLIRGccLoopsEx2b1, 5);
 MemRef<int, 1> inputMLIRGccLoopsEx2b2(sizesInputArrayMLIRGccLoopsEx2b2, 6);
-size_t input3 = 10;
+size_t input3 = 100000;
 MemRef<int, 1> outputMLIRGccLoopsEx2b1(sizesOutputArrayMLIRGccLoopsEx2b, 0);
 int outputMLIRGccLoopsEx2b2 = 0;
 

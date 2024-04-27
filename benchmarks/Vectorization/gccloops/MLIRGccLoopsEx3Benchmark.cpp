@@ -30,10 +30,10 @@ void _mlir_ciface_mlir_gccloopsex3(size_t n,
 }
 
 // Define input and output sizes.
-intptr_t sizesInputArrayMLIRGccLoopsEx3[1] = {12};
-intptr_t sizesOutputArrayMLIRGccLoopsEx3[1] = {12};
+intptr_t sizesInputArrayMLIRGccLoopsEx3[1] = {120000};
+intptr_t sizesOutputArrayMLIRGccLoopsEx3[1] = {120000};
 // Define the MemRef container for n, intput, and output.
-size_t n = 12;
+size_t n = 120000;
 MemRef<int, 1> inputMLIRGccLoopsEx3(sizesInputArrayMLIRGccLoopsEx3, 2);
 MemRef<int, 1> outputMLIRGccLoopsEx3(sizesOutputArrayMLIRGccLoopsEx3, 0);
 
