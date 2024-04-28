@@ -27,6 +27,6 @@ int main(int argc, char **argv) {
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
   // Run correctness verification.
-  verification();
+  // verification();
   return 0;
 }

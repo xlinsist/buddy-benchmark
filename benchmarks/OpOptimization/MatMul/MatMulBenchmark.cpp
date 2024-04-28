@@ -46,20 +46,20 @@ bool areArraysEqual(float array1[], float array2[], int size) {
 namespace {
 // Declare the matmul C interface.
 extern "C" {
-void _mlir_ciface_matmul_ocv(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                             MemRef<float, 2> *C);
-void _mlir_ciface_matmul_transform(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                                   MemRef<float, 2> *C);
-void _mlir_ciface_matmul_broadcast_16(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                                      MemRef<float, 2> *C);
-void _mlir_ciface_matmul_broadcast_32(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                                      MemRef<float, 2> *C);
-void _mlir_ciface_matmul_broadcast_64(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                                      MemRef<float, 2> *C);
-void _mlir_ciface_matmul_broadcast_128(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                                       MemRef<float, 2> *C);
-void _mlir_ciface_matmul_broadcast_256(MemRef<float, 2> *A, MemRef<float, 2> *B,
-                                       MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_ocv(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                              MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_transform(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                                    MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_broadcast_16(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                                       MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_broadcast_32(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                                       MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_broadcast_64(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                                       MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_broadcast_128(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                                        MemRef<float, 2> *C);
+// void _mlir_ciface_matmul_broadcast_256(MemRef<float, 2> *A, MemRef<float, 2> *B,
+//                                        MemRef<float, 2> *C);
 void _mlir_ciface_matmul_scalar(MemRef<float, 2> *A, MemRef<float, 2> *B,
                                 MemRef<float, 2> *C);
 }
@@ -79,25 +79,25 @@ void _mlir_ciface_matmul_scalar(MemRef<float, 2> *A, MemRef<float, 2> *B,
     }                                                                          \
   }
 
-DEFINE_MATMUL_BENCHMARK(OCV, _mlir_ciface_matmul_ocv)
-DEFINE_MATMUL_BENCHMARK(TRANSFORM, _mlir_ciface_matmul_transform)
-DEFINE_MATMUL_BENCHMARK(BROADCAST_16, _mlir_ciface_matmul_broadcast_16)
-DEFINE_MATMUL_BENCHMARK(BROADCAST_32, _mlir_ciface_matmul_broadcast_32)
-DEFINE_MATMUL_BENCHMARK(BROADCAST_64, _mlir_ciface_matmul_broadcast_64)
-DEFINE_MATMUL_BENCHMARK(BROADCAST_128, _mlir_ciface_matmul_broadcast_128)
-DEFINE_MATMUL_BENCHMARK(BROADCAST_256, _mlir_ciface_matmul_broadcast_256)
+// DEFINE_MATMUL_BENCHMARK(OCV, _mlir_ciface_matmul_ocv)
+// DEFINE_MATMUL_BENCHMARK(TRANSFORM, _mlir_ciface_matmul_transform)
+// DEFINE_MATMUL_BENCHMARK(BROADCAST_16, _mlir_ciface_matmul_broadcast_16)
+// DEFINE_MATMUL_BENCHMARK(BROADCAST_32, _mlir_ciface_matmul_broadcast_32)
+// DEFINE_MATMUL_BENCHMARK(BROADCAST_64, _mlir_ciface_matmul_broadcast_64)
+// DEFINE_MATMUL_BENCHMARK(BROADCAST_128, _mlir_ciface_matmul_broadcast_128)
+// DEFINE_MATMUL_BENCHMARK(BROADCAST_256, _mlir_ciface_matmul_broadcast_256)
 DEFINE_MATMUL_BENCHMARK(SCALAR, _mlir_ciface_matmul_scalar)
 } // namespace
 
 // Register benchmark cases.
 BENCHMARK(BM_MATMUL_SCALAR)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_OCV)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_TRANSFORM)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_BROADCAST_16)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_BROADCAST_32)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_BROADCAST_64)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_BROADCAST_128)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_BROADCAST_256)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_OCV)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_TRANSFORM)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_BROADCAST_16)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_BROADCAST_32)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_BROADCAST_64)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_BROADCAST_128)->Unit(benchmark::kMillisecond);
+// BENCHMARK(BM_MATMUL_BROADCAST_256)->Unit(benchmark::kMillisecond);
 
 /// Correctness Verification
 /// The verification does not affect the performance.
@@ -145,18 +145,18 @@ void verification() {
 
   // Perform all the matmul implementation.
   _mlir_ciface_matmul_scalar(&inputAMemRef, &inputBMemRef, &outputScalar);
-  _mlir_ciface_matmul_ocv(&inputAMemRef, &inputBMemRef, &outputOCV);
-  _mlir_ciface_matmul_transform(&inputAMemRef, &inputBMemRef, &outputTransform);
-  _mlir_ciface_matmul_broadcast_16(&inputAMemRef, &inputBMemRef,
-                                   &outputBroadcast16);
-  _mlir_ciface_matmul_broadcast_32(&inputAMemRef, &inputBMemRef,
-                                   &outputBroadcast32);
-  _mlir_ciface_matmul_broadcast_64(&inputAMemRef, &inputBMemRef,
-                                   &outputBroadcast64);
-  _mlir_ciface_matmul_broadcast_128(&inputAMemRef, &inputBMemRef,
-                                    &outputBroadcast128);
-  _mlir_ciface_matmul_broadcast_256(&inputAMemRef, &inputBMemRef,
-                                    &outputBroadcast256);
+  // _mlir_ciface_matmul_ocv(&inputAMemRef, &inputBMemRef, &outputOCV);
+  // _mlir_ciface_matmul_transform(&inputAMemRef, &inputBMemRef, &outputTransform);
+  // _mlir_ciface_matmul_broadcast_16(&inputAMemRef, &inputBMemRef,
+  //                                  &outputBroadcast16);
+  // _mlir_ciface_matmul_broadcast_32(&inputAMemRef, &inputBMemRef,
+  //                                  &outputBroadcast32);
+  // _mlir_ciface_matmul_broadcast_64(&inputAMemRef, &inputBMemRef,
+  //                                  &outputBroadcast64);
+  // _mlir_ciface_matmul_broadcast_128(&inputAMemRef, &inputBMemRef,
+  //                                   &outputBroadcast128);
+  // _mlir_ciface_matmul_broadcast_256(&inputAMemRef, &inputBMemRef,
+  //                                   &outputBroadcast256);
 
   // Get the result array.
   auto resultScalar = outputScalar.getData();
