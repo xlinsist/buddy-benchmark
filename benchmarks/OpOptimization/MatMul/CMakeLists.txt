@@ -1,130 +1,67 @@
-# add_custom_command(OUTPUT matmul-ocv.o
-#   COMMAND cat ${BUDDY_SOURCE_DIR}/benchmarks/OpOptimization/MatMul/MatMul.mlir |
-#           sed 's/bm_matmul/matmul_ocv/' |
-#           ${BUDDY_MLIR_BUILD_DIR}/bin/buddy-opt
-#             -matmul-optimize="vec-size=16;kernel-m=1;kernel-n=2"
-#             -expand-strided-metadata
-#             -lower-affine
-#             -convert-vector-to-llvm
-#             -finalize-memref-to-llvm
-#             -convert-scf-to-cf
-#             -llvm-request-c-wrappers
-#             -convert-func-to-llvm
-#             -reconcile-unrealized-casts | 
-#           ${LLVM_MLIR_BINARY_DIR}/mlir-translate --mlir-to-llvmir |
-#           ${LLVM_MLIR_BINARY_DIR}/llc -O3 -mtriple=${BUDDY_OPT_TRIPLE}
-#             -mattr=${BUDDY_OPT_ATTR} --filetype=obj
-# 	          -o ${BUDDY_BINARY_DIR}/../benchmarks/OpOptimization/MatMul/matmul-ocv.o
-# )
-# add_library(MatMulOCV STATIC matmul-ocv.o)
-# set_target_properties(MatMulOCV PROPERTIES LINKER_LANGUAGE CXX)
+function(add_e2e_custom_command output_file mlir_file mlir_opt_flags mlir_translate_flags)
+  if(CMAKE_TOOLCHAIN_FILE STREQUAL ${BUDDY_SOURCE_DIR}/cmake/riscv-toolchain.cmake)
+    # Generate RISC-V object file.
+    set(target_triple "riscv64")
+    set(target_attr "+m,+d,+v")
+    set(target_attr_additional "--target-abi=lp64d" "--relocation-model=pic" "-riscv-v-vector-bits-min=128")
+  else()
+    # Generate x86 object file.
+    set(target_triple "${BUDDY_OPT_TRIPLE}")
+    set(target_attr "${BUDDY_OPT_ATTR}")
+  endif()
 
-# add_custom_command(OUTPUT matmul-transform.o
-#   COMMAND cat ${BUDDY_SOURCE_DIR}/benchmarks/OpOptimization/MatMul/MatMulTransform.mlir |
-#           ${LLVM_MLIR_BINARY_DIR}/mlir-opt
-#           --llvm-request-c-wrappers
-#           --test-lower-to-llvm |      
-#           ${LLVM_MLIR_BINARY_DIR}/mlir-translate --mlir-to-llvmir |
-#           ${LLVM_MLIR_BINARY_DIR}/llc -O3 -mtriple=${BUDDY_OPT_TRIPLE}
-#             -mattr=${BUDDY_OPT_ATTR} --filetype=obj
-# 	          -o ${BUDDY_BINARY_DIR}/../benchmarks/OpOptimization/MatMul/matmul-transform.o
-# )
-# add_library(MatMulTransform STATIC matmul-transform.o)
-# set_target_properties(MatMulTransform PROPERTIES LINKER_LANGUAGE CXX)
+  set(mlir_opt_commands "${LLVM_MLIR_BINARY_DIR}/mlir-opt")
+  foreach(flag IN LISTS mlir_opt_flags)
+    list(APPEND mlir_opt_commands "${flag}")
+  endforeach()
 
-# function(build_matmul_broadcast step)
-#   add_custom_command(OUTPUT matmul-broadcast-${step}.o
-#     COMMAND cat ${BUDDY_SOURCE_DIR}/benchmarks/OpOptimization/MatMul/MatMulBroadcast.mlir |
-#             sed 's/STEP_PLACEHOLDER/${step}/g' |
-#             ${LLVM_MLIR_BINARY_DIR}/mlir-opt
-#               -convert-linalg-to-loops
-#               -lower-affine
-#               -convert-scf-to-cf
-#               -convert-vector-to-llvm
-#               -finalize-memref-to-llvm
-#               -convert-arith-to-llvm
-#               -llvm-request-c-wrappers
-#               -convert-func-to-llvm
-#               -reconcile-unrealized-casts |
-#             ${LLVM_MLIR_BINARY_DIR}/mlir-translate --mlir-to-llvmir |
-#             ${LLVM_MLIR_BINARY_DIR}/llc -O3 -mtriple=${BUDDY_OPT_TRIPLE}
-#               -mattr=${BUDDY_OPT_ATTR} --filetype=obj
-#               -o ${BUDDY_BINARY_DIR}/../benchmarks/OpOptimization/MatMul/matmul-broadcast-${step}.o
-#   )
-#   add_library(MatMulBroadcast${step} STATIC matmul-broadcast-${step}.o)
-#   set_target_properties(MatMulBroadcast${step} PROPERTIES LINKER_LANGUAGE CXX)
-# endfunction()
-
-# build_matmul_broadcast(16)
-# build_matmul_broadcast(32)
-# build_matmul_broadcast(64)
-# build_matmul_broadcast(128)
-# build_matmul_broadcast(256)
-
-message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
-message(STATUS "BUDDY_TOOLCHAIN_FILE: ${BUDDY_SOURCE_DIR}/cmake/riscv-toolchain.cmake")
-
-if(CMAKE_TOOLCHAIN_FILE STREQUAL ${BUDDY_SOURCE_DIR}/cmake/riscv-toolchain.cmake)
-
-  # Generate RISC-V object file.
-  add_custom_command(OUTPUT matmul-scalar.o
-    COMMAND cat ${BUDDY_SOURCE_DIR}/benchmarks/OpOptimization/MatMul/MatMul.mlir |
-            sed 's/bm_matmul/matmul_scalar/' |
-            ${LLVM_MLIR_BINARY_DIR}/mlir-opt
-              -convert-linalg-to-loops
-              -lower-affine
-              -convert-scf-to-cf
-              -convert-vector-to-llvm
-              -finalize-memref-to-llvm
-              -convert-arith-to-llvm
-              -llvm-request-c-wrappers
-              -convert-func-to-llvm
-              -reconcile-unrealized-casts | 
-    ${LLVM_MLIR_BINARY_DIR}/mlir-translate --mlir-to-llvmir |
-    ${LLVM_MLIR_BINARY_DIR}/llc -O3 -mtriple riscv64 -target-abi lp64d
-    -mattr=+m,+d,+v --filetype=obj -relocation-model=pic -riscv-v-vector-bits-min=128
-    -o ${BUDDY_BINARY_DIR}/../benchmarks/OpOptimization/MatMul/matmul-scalar.o
+  add_custom_command(OUTPUT ${output_file}
+    COMMAND cat ${BUDDY_SOURCE_DIR}/benchmarks/OpOptimization/MatMul/${mlir_file} |
+            ${mlir_opt_commands} |
+            ${LLVM_MLIR_BINARY_DIR}/mlir-translate ${mlir_translate_flags} |
+            ${LLVM_MLIR_BINARY_DIR}/llc -O3 -mtriple=${target_triple} -mattr=${target_attr}
+              ${target_attr_additional} --filetype=obj
+              -o ${BUDDY_BINARY_DIR}/../benchmarks/OpOptimization/MatMul/${output_file}
   )
-else()
-  # Generate x86 object file.
-  add_custom_command(OUTPUT matmul-scalar.o
-    COMMAND cat ${BUDDY_SOURCE_DIR}/benchmarks/OpOptimization/MatMul/MatMul.mlir |
-            sed 's/bm_matmul/matmul_scalar/' |
-            ${LLVM_MLIR_BINARY_DIR}/mlir-opt
-              -convert-linalg-to-loops
-              -lower-affine
-              -convert-scf-to-cf
-              -convert-vector-to-llvm
-              -finalize-memref-to-llvm
-              -convert-arith-to-llvm
-              -llvm-request-c-wrappers
-              -convert-func-to-llvm
-              -reconcile-unrealized-casts | 
-            ${LLVM_MLIR_BINARY_DIR}/mlir-translate --mlir-to-llvmir |
-            ${LLVM_MLIR_BINARY_DIR}/llc -O3 -mtriple=${BUDDY_OPT_TRIPLE} 
-              -mattr=${BUDDY_OPT_ATTR} --filetype=obj 
-              -o ${BUDDY_BINARY_DIR}/../benchmarks/OpOptimization/MatMul/matmul-scalar.o
-  )
-endif()
+endfunction()
 
-add_library(MatMulScalar STATIC matmul-scalar.o)
-set_target_properties(MatMulScalar PROPERTIES LINKER_LANGUAGE CXX)
+# BM_MATMUL_SCALAR
+add_e2e_custom_command(
+  "matmul-scalar.o" 
+  "MatMul.mlir" 
+  "-convert-linalg-to-loops;-lower-affine;-convert-scf-to-cf;-convert-vector-to-llvm;-finalize-memref-to-llvm;-convert-arith-to-llvm;-llvm-request-c-wrappers;-convert-func-to-llvm;-reconcile-unrealized-casts"
+  "--mlir-to-llvmir"
+)
 
-add_executable(matmul-benchmark
-  Main.cpp
-  MatMulBenchmark.cpp
-  )
+# BM_MATMUL_OCV
+add_e2e_custom_command(
+  "matmul-ocv.o" 
+  "MatMulOCV.mlir" 
+  "-expand-strided-metadata;-lower-affine;-convert-vector-to-llvm;-finalize-memref-to-llvm;-convert-scf-to-cf;-llvm-request-c-wrappers;-convert-func-to-llvm;-reconcile-unrealized-casts"
+  "--mlir-to-llvmir"
+)
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
+# BM_MATMUL_TRANSFORM
+add_e2e_custom_command(
+  "matmul-transform.o" 
+  "MatMulTransform.mlir" 
+  "--llvm-request-c-wrappers;--test-lower-to-llvm"
+  "--mlir-to-llvmir"
+)
 
-target_link_libraries(matmul-benchmark
-  GoogleBenchmark
-  # MatMulOCV
-  # MatMulTransform
-  # MatMulBroadcast16
-  # MatMulBroadcast32
-  # MatMulBroadcast64
-  # MatMulBroadcast128
-  # MatMulBroadcast256
-  MatMulScalar
-  )
+# BM_MATMUL_BROADCAST
+add_e2e_custom_command(
+  "matmul-broadcast-32.o" 
+  "MatMulBroadcast.mlir" 
+  "-convert-linalg-to-loops;-lower-affine;-convert-scf-to-cf;-convert-vector-to-llvm;-finalize-memref-to-llvm;-convert-arith-to-llvm;-llvm-request-c-wrappers;-convert-func-to-llvm;-reconcile-unrealized-casts"
+  "--mlir-to-llvmir"
+)
+
+add_library(MatMulScalar STATIC "matmul-scalar.o")
+add_library(MatMulOCV STATIC "matmul-ocv.o")
+add_library(MatMulTransform STATIC "matmul-transform.o")
+add_library(MatMulBroadcast32 STATIC "matmul-broadcast-32.o")
+set_target_properties(MatMulScalar MatMulOCV MatMulTransform MatMulBroadcast32 PROPERTIES LINKER_LANGUAGE CXX)
+
+add_executable(matmul-benchmark Main.cpp MatMulBenchmark.cpp)
+target_link_libraries(matmul-benchmark GoogleBenchmark MatMulScalar MatMulOCV MatMulTransform MatMulBroadcast32)
