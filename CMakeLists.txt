@@ -27,8 +27,8 @@ find_package(BuddyMLIR REQUIRED CONFIG)
 set(BUDDY_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 set(BUDDY_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/bin)
 set(BUDDY_EXAMPLES_DIR ${BUDDY_SOURCE_DIR}/examples)
-set(BUDDY_OPT_ATTR avx512f CACHE STRING "Target Architecture.")
-set(BUDDY_OPT_TRIPLE x86_64-unknown-linux-gnu CACHE STRING "Target Triple.")
+set(BUDDY_OPT_ATTR +sve CACHE STRING "Target Architecture.")
+set(BUDDY_OPT_TRIPLE aarch64-none-linux-gnu CACHE STRING "Target Triple.")
 message(STATUS "Configuring Target Architecture: ${BUDDY_OPT_ATTR}")
 message(STATUS "Configuring Target Triple: ${BUDDY_OPT_TRIPLE}")
 
@@ -67,6 +67,7 @@ ExternalProject_Add(project_googlebenchmark
   CMAKE_ARGS
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/vendor/benchmark
     -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+    -DCMAKE_INSTALL_LIBDIR=lib
     -DBENCHMARK_ENABLE_TESTING=OFF
   UPDATE_COMMAND ""
   TEST_COMMAND "")
@@ -88,7 +89,7 @@ target_link_libraries(GoogleBenchmark INTERFACE Threads::Threads)
 # Find OpenCV
 #-------------------------------------------------------------------------------
 
-if(DEFINED IMAGE_PROCESSING_BENCHMARKS OR DEEP_LEARNING_BENCHMARKS OR OP_OPTIMIZATION_BENCHMARKS)
+if(DEFINED IMAGE_PROCESSING_BENCHMARKS OR DEEP_LEARNING_BENCHMARKS)
   find_package(OpenCV REQUIRED CONFIG)
   include_directories(${OpenCV_INCLUDE_DIRS})
 endif()
