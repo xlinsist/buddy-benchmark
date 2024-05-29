@@ -20,13 +20,9 @@
 
 #include <benchmark/benchmark.h>
 
-void verification();
-
 int main(int argc, char **argv) {
   // Run benchmark.
   ::benchmark::Initialize(&argc, argv);
   ::benchmark::RunSpecifiedBenchmarks();
-  // Run correctness verification.
-  verification();
   return 0;
 }

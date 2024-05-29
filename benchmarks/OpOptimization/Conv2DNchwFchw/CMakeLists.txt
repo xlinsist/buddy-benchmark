@@ -5,7 +5,7 @@ function(add_e2e_custom_command output_file mlir_file sed_command mlir_opt_flags
     set(target_attr "+m,+d,+v")
     set(target_attr_additional "--target-abi=lp64d" "--relocation-model=pic" "-riscv-v-vector-bits-min=128")
   else()
-    # Generate arm object file.
+    # Generate x86 object file.
     set(target_triple "${BUDDY_OPT_TRIPLE}")
     set(target_attr "${BUDDY_OPT_ATTR}")
   endif()
@@ -34,7 +34,6 @@ function(build_function_vector func_name step)
     "--mlir-to-llvmir"
   )
   add_library(${func_name}Vector${step} STATIC "${func_name}${step}.o")
-  target_link_libraries(${func_name}Vector${step} -static)
   set_target_properties(${func_name}Vector${step} PROPERTIES LINKER_LANGUAGE CXX) 
 endfunction()
 
@@ -47,7 +46,6 @@ function(build_function_im2col_vector func_name step)
     "--mlir-to-llvmir"
   )
   add_library(${func_name}Im2colVector${step} STATIC "${func_name}Im2col${step}.o")
-  target_link_libraries(${func_name}Im2colVector${step} -static)
   set_target_properties(${func_name}Im2colVector${step} PROPERTIES LINKER_LANGUAGE CXX) 
 endfunction()
 
@@ -60,15 +58,20 @@ function(build_function_all func_name)
     "--mlir-to-llvmir"
   )
   add_library(${func_name} STATIC "${func_name}.o")
-  target_link_libraries(${func_name} -static)
   set_target_properties(${func_name} PROPERTIES LINKER_LANGUAGE CXX) 
   
+  build_function_vector(${func_name} 1)
+  build_function_vector(${func_name} 2)
+  build_function_vector(${func_name} 4)
   build_function_vector(${func_name} 8)
   build_function_vector(${func_name} 16)
   build_function_vector(${func_name} 32)
   build_function_vector(${func_name} 64)
   build_function_vector(${func_name} 128)
 
+  build_function_im2col_vector(${func_name} 1)
+  build_function_im2col_vector(${func_name} 2)
+  build_function_im2col_vector(${func_name} 4)
   build_function_im2col_vector(${func_name} 8)
   build_function_im2col_vector(${func_name} 16)
   build_function_im2col_vector(${func_name} 32)
@@ -79,14 +82,20 @@ endfunction()
 build_function_all("Conv2DNchwFchw")
 
 add_executable(conv2d-nchw-fchw-benchmark Main.cpp Conv2DNchwFchwBenchmark.cpp)
-target_link_libraries(conv2d-nchw-fchw-benchmark -static
+target_link_libraries(conv2d-nchw-fchw-benchmark
                       GoogleBenchmark
                       Conv2DNchwFchw
+                      Conv2DNchwFchwVector1
+                      Conv2DNchwFchwVector2
+                      Conv2DNchwFchwVector4
                       Conv2DNchwFchwVector8
                       Conv2DNchwFchwVector16
                       Conv2DNchwFchwVector32
                       Conv2DNchwFchwVector64
                       Conv2DNchwFchwVector128
+                      Conv2DNchwFchwIm2colVector1
+                      Conv2DNchwFchwIm2colVector2
+                      Conv2DNchwFchwIm2colVector4
                       Conv2DNchwFchwIm2colVector8
                       Conv2DNchwFchwIm2colVector16
                       Conv2DNchwFchwIm2colVector32

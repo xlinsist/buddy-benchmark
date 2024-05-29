@@ -5,7 +5,7 @@ function(add_e2e_custom_command output_file mlir_file sed_command mlir_opt_flags
     set(target_attr "+m,+d,+v")
     set(target_attr_additional "--target-abi=lp64d" "--relocation-model=pic" "-riscv-v-vector-bits-min=128")
   else()
-    # Generate arm object file.
+    # Generate x86 object file.
     set(target_triple "${BUDDY_OPT_TRIPLE}")
     set(target_attr "${BUDDY_OPT_ATTR}")
   endif()
@@ -35,7 +35,6 @@ function(build_function_vector func_name step)
     "--mlir-to-llvmir"
   )
   add_library(${func_name}Vector${step} STATIC "${func_name}${step}.o")
-  target_link_libraries(${func_name}Vector${step} -static)
   set_target_properties(${func_name}Vector${step} PROPERTIES LINKER_LANGUAGE CXX) 
 endfunction()
 
@@ -48,9 +47,11 @@ function(build_function_all func_name)
     "--mlir-to-llvmir"
   )
   add_library(${func_name} STATIC "${func_name}.o")
-  target_link_libraries(${func_name} -static)
   set_target_properties(${func_name} PROPERTIES LINKER_LANGUAGE CXX) 
   
+  build_function_vector(${func_name} 1)
+  build_function_vector(${func_name} 2)
+  build_function_vector(${func_name} 4)
   build_function_vector(${func_name} 8)
   build_function_vector(${func_name} 16)
   build_function_vector(${func_name} 32)
@@ -63,21 +64,30 @@ build_function_all("Reduction")
 build_function_all("Matmul2D")
 
 add_executable(affine-ops-benchmark Main.cpp AffineOpsBenchmark.cpp)
-target_link_libraries(affine-ops-benchmark -static
+target_link_libraries(affine-ops-benchmark
                       GoogleBenchmark
                       Add2D
+                      Add2DVector1
+                      Add2DVector2
+                      Add2DVector4
                       Add2DVector8
                       Add2DVector16
                       Add2DVector32
                       Add2DVector64
                       Add2DVector128
                       Reduction
+                      ReductionVector1
+                      ReductionVector2
+                      ReductionVector4
                       ReductionVector8
                       ReductionVector16
                       ReductionVector32
                       ReductionVector64
                       ReductionVector128
                       Matmul2D
+                      Matmul2DVector1
+                      Matmul2DVector2
+                      Matmul2DVector4
                       Matmul2DVector8
                       Matmul2DVector16
                       Matmul2DVector32
