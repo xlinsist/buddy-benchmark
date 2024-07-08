@@ -18,7 +18,7 @@
 //
 //===----------------------------------------------------------------------===//
 
-#include <benchmark/benchmark.h>
+// #include <benchmark/benchmark.h>
 #include <buddy/Core/Container.h>
 #include <iostream>
 #include <random>
@@ -51,29 +51,7 @@ void _mlir_ciface_matmul_scalar(MemRef<float, 2> *A, MemRef<float, 2> *B,
 void _mlir_ciface_matmul_transform(MemRef<float, 2> *A, MemRef<float, 2> *B,
                                    MemRef<float, 2> *C);
 }
-
-#define DEFINE_MATMUL_BENCHMARK(name, func)                                    \
-  void BM_MATMUL_##name(benchmark::State &state) {                             \
-    intptr_t sizesA[2] = {M, K};                                               \
-    intptr_t sizesB[2] = {K, N};                                               \
-    intptr_t sizesC[2] = {M, N};                                               \
-                                                                               \
-    MemRef<float, 2> A(sizesA, 1.0);                                           \
-    MemRef<float, 2> B(sizesB, 1.0);                                           \
-    MemRef<float, 2> C(sizesC, 0.0);                                           \
-                                                                               \
-    for (auto _ : state) {                                                     \
-      func(&A, &B, &C);                                                        \
-    }                                                                          \
-  }
-
-DEFINE_MATMUL_BENCHMARK(SCALAR, _mlir_ciface_matmul_scalar)
-DEFINE_MATMUL_BENCHMARK(TRANSFORM, _mlir_ciface_matmul_transform)
 } // namespace
-
-// Register benchmark cases.
-BENCHMARK(BM_MATMUL_SCALAR)->Unit(benchmark::kMillisecond);
-BENCHMARK(BM_MATMUL_TRANSFORM)->Unit(benchmark::kMillisecond);
 
 /// Correctness Verification
 /// The verification does not affect the performance.
@@ -135,9 +113,6 @@ void verification() {
 }
 
 int main(int argc, char **argv) {
-  // Run benchmark.
-  ::benchmark::Initialize(&argc, argv);
-  ::benchmark::RunSpecifiedBenchmarks();
   // Run correctness verification.
   verification();
   return 0;
