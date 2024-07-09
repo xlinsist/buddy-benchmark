@@ -23,6 +23,16 @@
 #include <iostream>
 #include <random>
 
+#include <sys/time.h>
+
+double rtclock() {
+  struct timeval tp;
+  int stat = gettimeofday(&tp, nullptr);
+  if (stat != 0)
+    fprintf(stderr, "Error returning time from gettimeofday: %d\n", stat);
+  return (tp.tv_sec + tp.tv_usec * 1.0e-6);
+}
+
 // Define target layout.
 #define M 64
 #define N 3136
@@ -92,8 +102,19 @@ void verification() {
   MemRef<float, 2> outputTransform(sizesC, 0);
 
   // Perform all the matmul implementation.
+  double StartTime, EndTime;
+  StartTime = rtclock();
   _mlir_ciface_matmul_scalar(&inputAMemRef, &inputBMemRef, &outputScalar);
+  EndTime = rtclock();
+  // Output the result
+  std::cout << "Total time running matmul scalar: " << EndTime - StartTime << std::endl;
+
+  StartTime = rtclock();
   _mlir_ciface_matmul_transform(&inputAMemRef, &inputBMemRef, &outputTransform);
+  EndTime = rtclock();
+  // Output the result
+  std::cout << "Total time running matmul transform: " << EndTime - StartTime << std::endl;
+
 
   // Get the result array.
   auto resultScalar = outputScalar.getData();
