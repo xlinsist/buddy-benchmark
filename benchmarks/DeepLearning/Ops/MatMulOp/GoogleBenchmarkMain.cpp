@@ -18,20 +18,10 @@
 //
 //===----------------------------------------------------------------------===//
 
-// #include <benchmark/benchmark.h>
 #include <buddy/Core/Container.h>
 #include <iostream>
 #include <random>
-
 #include <sys/time.h>
-
-double rtclock() {
-  struct timeval tp;
-  int stat = gettimeofday(&tp, nullptr);
-  if (stat != 0)
-    fprintf(stderr, "Error returning time from gettimeofday: %d\n", stat);
-  return (tp.tv_sec + tp.tv_usec * 1.0e-6);
-}
 
 // Define target layout.
 #define M 64
@@ -50,6 +40,14 @@ bool areArraysEqual(float array1[], float array2[], int size) {
     }
   }
   return true;
+}
+
+double rtclock() {
+  struct timeval tp;
+  int stat = gettimeofday(&tp, nullptr);
+  if (stat != 0)
+    fprintf(stderr, "Error returning time from gettimeofday: %d\n", stat);
+  return (tp.tv_sec + tp.tv_usec * 1.0e-6);
 }
 } // namespace
 
@@ -107,14 +105,15 @@ void verification() {
   _mlir_ciface_matmul_scalar(&inputAMemRef, &inputBMemRef, &outputScalar);
   EndTime = rtclock();
   // Output the result
-  std::cout << "Total time running matmul scalar: " << EndTime - StartTime << std::endl;
+  std::cout << "Total time running matmul scalar: " << EndTime - StartTime
+            << " s." << std::endl;
 
   StartTime = rtclock();
   _mlir_ciface_matmul_transform(&inputAMemRef, &inputBMemRef, &outputTransform);
   EndTime = rtclock();
   // Output the result
-  std::cout << "Total time running matmul transform: " << EndTime - StartTime << std::endl;
-
+  std::cout << "Total time running matmul transform: " << EndTime - StartTime
+            << " s." << std::endl;
 
   // Get the result array.
   auto resultScalar = outputScalar.getData();
